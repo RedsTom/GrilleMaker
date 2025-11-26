@@ -1,5 +1,22 @@
 @import "tailwindcss";
 
-body {
-  @apply bg-yellow-50;
+@layer base {
+  body {
+    @apply bg-amber-50 text-amber-900;
+    background-image:
+      repeating-linear-gradient(
+        90deg,
+        transparent,
+        transparent 2px,
+        rgba(180, 83, 9, 0.03) 2px,
+        rgba(180, 83, 9, 0.03) 4px
+      ),
+      repeating-linear-gradient(
+        0deg,
+        transparent,
+        transparent 2px,
+        rgba(180, 83, 9, 0.03) 2px,
+        rgba(180, 83, 9, 0.03) 4px
+      );
+  }
 }

@@ -1,0 +1,194 @@
+export type CellType = 'standard' | 'definition';
+export type SelectionDirection = 'row' | 'column';
+export type BorderStyle = 'solid' | 'dashed';
+
+export interface CellData {
+    value: string;
+    type: CellType;
+    borders?: {
+        top?: BorderStyle;
+        right?: BorderStyle;
+        bottom?: BorderStyle;
+        left?: BorderStyle;
+    };
+}
+
+export class CrosswordStore {
+    rows = $state(10);
+    cols = $state(10);
+    grid = $state<CellData[][]>([]);
+    selectedCell = $state<{ x: number; y: number } | null>(null);
+    mode = $state<'edit' | 'preview'>('edit');
+    selectionDirection = $state<SelectionDirection>('row');
+    lastClickedCell = $state<{ x: number; y: number } | null>(null);
+
+    constructor(rows = 10, cols = 10) {
+        this.rows = rows;
+        this.cols = cols;
+        this.initializeGrid();
+        this.load();
+    }
+
+    initializeGrid() {
+        this.grid = Array.from({ length: this.rows }, () =>
+            Array.from({ length: this.cols }, () => ({ value: '', type: 'standard' }))
+        );
+    }
+
+    selectCell(x: number, y: number, isClick: boolean = false) {
+        // Si c'est un clic (pas une navigation) sur la même cellule, on toggle la direction
+        if (isClick && this.selectedCell?.x === x && this.selectedCell?.y === y) {
+            this.selectionDirection = this.selectionDirection === 'row' ? 'column' : 'row';
+        } else if (isClick && (this.selectedCell?.x !== x || this.selectedCell?.y !== y)) {
+            // Nouveau clic sur une cellule différente, on commence en mode ligne
+            this.selectionDirection = 'row';
+        }
+        // Si c'est une navigation (pas un clic), on ne change pas la direction
+        this.selectedCell = { x, y };
+    }
+
+    deselectCell() {
+        this.selectedCell = null;
+        this.lastClickedCell = null;
+    }
+
+    isRowOrColumnSelected(x: number, y: number): boolean {
+        if (!this.selectedCell) return false;
+
+        if (this.selectionDirection === 'row') {
+            return x === this.selectedCell.x;
+        } else {
+            return y === this.selectedCell.y;
+        }
+    }
+
+    setCellValue(x: number, y: number, value: string) {
+        if (this.isValidCell(x, y)) {
+            this.grid[x][y].value = value;
+        }
+    }
+
+    toggleCellType(x: number, y: number) {
+        if (this.isValidCell(x, y)) {
+            const currentType = this.grid[x][y].type;
+            this.grid[x][y].type = currentType === 'standard' ? 'definition' : 'standard';
+        }
+    }
+
+    setBorderStyle(x: number, y: number, side: 'top' | 'right' | 'bottom' | 'left', style: BorderStyle) {
+        if (this.isValidCell(x, y)) {
+            if (!this.grid[x][y].borders) {
+                this.grid[x][y].borders = {};
+            }
+            this.grid[x][y].borders![side] = style;
+
+            // Synchroniser avec la cellule voisine pour qu'elle voie aussi les pointillés
+            if (side === 'top' && this.isValidCell(x - 1, y)) {
+                if (!this.grid[x - 1][y].borders) {
+                    this.grid[x - 1][y].borders = {};
+                }
+                this.grid[x - 1][y].borders!['bottom'] = style;
+            } else if (side === 'bottom' && this.isValidCell(x + 1, y)) {
+                if (!this.grid[x + 1][y].borders) {
+                    this.grid[x + 1][y].borders = {};
+                }
+                this.grid[x + 1][y].borders!['top'] = style;
+            } else if (side === 'left' && this.isValidCell(x, y - 1)) {
+                if (!this.grid[x][y - 1].borders) {
+                    this.grid[x][y - 1].borders = {};
+                }
+                this.grid[x][y - 1].borders!['right'] = style;
+            } else if (side === 'right' && this.isValidCell(x, y + 1)) {
+                if (!this.grid[x][y + 1].borders) {
+                    this.grid[x][y + 1].borders = {};
+                }
+                this.grid[x][y + 1].borders!['left'] = style;
+            }
+        }
+    }
+
+    getBorderStyle(x: number, y: number, side: 'top' | 'right' | 'bottom' | 'left'): BorderStyle {
+        if (this.isValidCell(x, y) && this.grid[x][y].borders?.[side]) {
+            return this.grid[x][y].borders![side];
+        }
+        return 'solid';
+    }
+
+    isValidCell(x: number, y: number) {
+        return x >= 0 && x < this.rows && y >= 0 && y < this.cols;
+    }
+
+    addRow() {
+        this.rows++;
+        this.grid.push(Array.from({ length: this.cols }, () => ({ value: '', type: 'standard' })));
+    }
+
+    removeRow() {
+        if (this.rows > 1) {
+            this.rows--;
+            this.grid.pop();
+            if (this.selectedCell && this.selectedCell.x >= this.rows) {
+                this.deselectCell();
+            }
+        }
+    }
+
+    addCol() {
+        this.cols++;
+        this.grid.forEach(row => {
+            row.push({ value: '', type: 'standard' });
+        });
+    }
+
+    removeCol() {
+        if (this.cols > 1) {
+            this.cols--;
+            this.grid.forEach(row => {
+                row.pop();
+            });
+            if (this.selectedCell && this.selectedCell.y >= this.cols) {
+                this.deselectCell();
+            }
+        }
+    }
+
+    save() {
+        if (typeof localStorage !== 'undefined') {
+            const data = {
+                rows: this.rows,
+                cols: this.cols,
+                grid: this.grid
+            };
+            localStorage.setItem('grillemaker_state', JSON.stringify(data));
+        }
+    }
+
+    load() {
+        if (typeof localStorage !== 'undefined') {
+            const saved = localStorage.getItem('grillemaker_state');
+            if (saved) {
+                try {
+                    const data = JSON.parse(saved);
+                    this.rows = data.rows;
+                    this.cols = data.cols;
+                    this.grid = data.grid;
+                } catch (e) {
+                    console.error('Failed to load state', e);
+                }
+            }
+        }
+    }
+}
+
+export const store = new CrosswordStore();
+
+$effect.root(() => {
+    $effect(() => {
+        // Track dependencies
+        store.rows;
+        store.cols;
+        store.grid;
+        // Save
+        store.save();
+    });
+});
