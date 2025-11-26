@@ -55,10 +55,40 @@ export class CrosswordStore {
     isRowOrColumnSelected(x: number, y: number): boolean {
         if (!this.selectedCell) return false;
 
+        const { x: sx, y: sy } = this.selectedCell;
+
         if (this.selectionDirection === 'row') {
-            return x === this.selectedCell.x;
+            if (x !== sx) return false;
+
+            // Si la cellule sélectionnée est une définition, on ne sélectionne qu'elle
+            if (this.grid[sx][sy].type === 'definition') return x === sx && y === sy;
+
+            // Si la cellule cible est une définition, elle ne fait pas partie du mot
+            if (this.grid[x][y].type === 'definition') return false;
+
+            // Vérifier s'il y a une définition entre la cellule sélectionnée et la cible
+            const min = Math.min(y, sy);
+            const max = Math.max(y, sy);
+            for (let k = min + 1; k < max; k++) {
+                if (this.grid[sx][k].type === 'definition') return false;
+            }
+            return true;
         } else {
-            return y === this.selectedCell.y;
+            if (y !== sy) return false;
+
+            // Si la cellule sélectionnée est une définition, on ne sélectionne qu'elle
+            if (this.grid[sx][sy].type === 'definition') return x === sx && y === sy;
+
+            // Si la cellule cible est une définition, elle ne fait pas partie du mot
+            if (this.grid[x][y].type === 'definition') return false;
+
+            // Vérifier s'il y a une définition entre la cellule sélectionnée et la cible
+            const min = Math.min(x, sx);
+            const max = Math.max(x, sx);
+            for (let k = min + 1; k < max; k++) {
+                if (this.grid[k][sy].type === 'definition') return false;
+            }
+            return true;
         }
     }
 
