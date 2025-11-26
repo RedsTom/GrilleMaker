@@ -92,7 +92,120 @@
     tabindex="0"
     onkeydown={handleKeyDown}
 >
-    {data.type === "definition" ? "DEF" : data.value}
+    {#if data.type === "definition"}
+        <div class="w-full h-full flex flex-col relative">
+            {#if data.definitions && data.definitions.length > 0}
+                {#each data.definitions as def, i}
+                    <div
+                        class="flex-1 w-full flex flex-col items-center justify-center relative min-h-0 px-0.5 {i <
+                        data.definitions.length - 1
+                            ? 'border-b border-amber-900/30'
+                            : ''}"
+                    >
+                        <!-- Text -->
+                        <span
+                            class="text-[0.6rem] leading-[0.7rem] font-bold break-words w-full text-center uppercase tracking-tight"
+                        >
+                            {def.text}
+                        </span>
+
+                        <!-- Arrow -->
+                        <div
+                            class="absolute flex items-center justify-center text-amber-900 pointer-events-none z-10"
+                            class:right-0={def.arrow === "right"}
+                            class:bottom-0={def.arrow === "down"}
+                            class:left-0={def.arrow === "left"}
+                            class:top-0={def.arrow === "up"}
+                            class:w-full={def.arrow === "up" ||
+                                def.arrow === "down"}
+                            class:h-full={def.arrow === "left" ||
+                                def.arrow === "right"}
+                            style="
+                                {def.arrow === 'right' ? 'right: -4px;' : ''}
+                                {def.arrow === 'left' ? 'left: -4px;' : ''}
+                                {def.arrow === 'up' ? 'top: -4px;' : ''}
+                                {def.arrow === 'down' ? 'bottom: -4px;' : ''}
+                            "
+                        >
+                            <div
+                                class="absolute flex items-center justify-center bg-amber-800 rounded-full"
+                                class:right-0={def.arrow === "right"}
+                                class:bottom-0={def.arrow === "down"}
+                                class:left-0={def.arrow === "left"}
+                                class:top-0={def.arrow === "up"}
+                            >
+                                {#if def.arrow === "right"}
+                                    <svg
+                                        width="12"
+                                        height="12"
+                                        viewBox="0 0 24 24"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        stroke-width="4"
+                                        stroke-linecap="round"
+                                        stroke-linejoin="round"
+                                        class="text-white drop-shadow-sm"
+                                        ><path d="M5 12h14" /><path
+                                            d="m12 5 7 7-7 7"
+                                        /></svg
+                                    >
+                                {:else if def.arrow === "down"}
+                                    <svg
+                                        width="12"
+                                        height="12"
+                                        viewBox="0 0 24 24"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        stroke-width="4"
+                                        stroke-linecap="round"
+                                        stroke-linejoin="round"
+                                        class="text-white drop-shadow-sm"
+                                        ><path d="M12 5v14" /><path
+                                            d="m19 12-7 7-7-7"
+                                        /></svg
+                                    >
+                                {:else if def.arrow === "left"}
+                                    <svg
+                                        width="12"
+                                        height="12"
+                                        viewBox="0 0 24 24"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        stroke-width="4"
+                                        stroke-linecap="round"
+                                        stroke-linejoin="round"
+                                        class="text-white drop-shadow-sm"
+                                        ><path d="M19 12H5" /><path
+                                            d="m12 19-7-7 7-7"
+                                        /></svg
+                                    >
+                                {:else if def.arrow === "up"}
+                                    <svg
+                                        width="12"
+                                        height="12"
+                                        viewBox="0 0 24 24"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        stroke-width="4"
+                                        stroke-linecap="round"
+                                        stroke-linejoin="round"
+                                        class="text-white drop-shadow-sm"
+                                        ><path d="M12 19V5" /><path
+                                            d="m5 12 7-7 7 7"
+                                        /></svg
+                                    >
+                                {/if}
+                            </div>
+                        </div>
+                    </div>
+                {/each}
+            {:else}
+                <span class="opacity-50 text-xs font-bold">DEF</span>
+            {/if}
+        </div>
+    {:else}
+        {data.value}
+    {/if}
 </div>
 
 <style>

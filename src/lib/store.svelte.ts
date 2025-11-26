@@ -2,6 +2,13 @@ export type CellType = 'standard' | 'definition';
 export type SelectionDirection = 'row' | 'column';
 export type BorderStyle = 'solid' | 'dashed';
 
+export interface Definition {
+    id: string;
+    text: string;
+    direction: 'horizontal' | 'vertical';
+    arrow: 'left' | 'right' | 'up' | 'down';
+}
+
 export interface CellData {
     value: string;
     type: CellType;
@@ -11,6 +18,7 @@ export interface CellData {
         bottom?: BorderStyle;
         left?: BorderStyle;
     };
+    definitions?: Definition[];
 }
 
 export class CrosswordStore {
@@ -31,7 +39,7 @@ export class CrosswordStore {
 
     initializeGrid() {
         this.grid = Array.from({ length: this.rows }, () =>
-            Array.from({ length: this.cols }, () => ({ value: '', type: 'standard' }))
+            Array.from({ length: this.cols }, () => ({ value: '', type: 'standard', definitions: [] }))
         );
     }
 
@@ -102,6 +110,36 @@ export class CrosswordStore {
         if (this.isValidCell(x, y)) {
             const currentType = this.grid[x][y].type;
             this.grid[x][y].type = currentType === 'standard' ? 'definition' : 'standard';
+            if (this.grid[x][y].type === 'definition' && !this.grid[x][y].definitions) {
+                this.grid[x][y].definitions = [];
+            }
+        }
+    }
+
+    addDefinition(x: number, y: number, definition: Omit<Definition, 'id'>) {
+        if (this.isValidCell(x, y)) {
+            if (!this.grid[x][y].definitions) {
+                this.grid[x][y].definitions = [];
+            }
+            this.grid[x][y].definitions!.push({
+                ...definition,
+                id: crypto.randomUUID()
+            });
+        }
+    }
+
+    removeDefinition(x: number, y: number, id: string) {
+        if (this.isValidCell(x, y) && this.grid[x][y].definitions) {
+            this.grid[x][y].definitions = this.grid[x][y].definitions!.filter(d => d.id !== id);
+        }
+    }
+
+    updateDefinition(x: number, y: number, id: string, updates: Partial<Definition>) {
+        if (this.isValidCell(x, y) && this.grid[x][y].definitions) {
+            const index = this.grid[x][y].definitions!.findIndex(d => d.id === id);
+            if (index !== -1) {
+                this.grid[x][y].definitions![index] = { ...this.grid[x][y].definitions![index], ...updates };
+            }
         }
     }
 
@@ -150,7 +188,7 @@ export class CrosswordStore {
 
     addRow() {
         this.rows++;
-        this.grid.push(Array.from({ length: this.cols }, () => ({ value: '', type: 'standard' })));
+        this.grid.push(Array.from({ length: this.cols }, () => ({ value: '', type: 'standard', definitions: [] })));
     }
 
     removeRow() {
@@ -166,7 +204,7 @@ export class CrosswordStore {
     addCol() {
         this.cols++;
         this.grid.forEach(row => {
-            row.push({ value: '', type: 'standard' });
+            row.push({ value: '', type: 'standard', definitions: [] });
         });
     }
 

@@ -2,6 +2,7 @@
     import { store } from "../store.svelte";
     import CellTypeControl from "./CellTypeControl.svelte";
     import BorderControl from "./BorderControl.svelte";
+    import DefinitionControl from "./DefinitionControl.svelte";
 
     let selectedCellData = $derived(
         store.selectedCell
@@ -23,6 +24,11 @@
                 <BorderControl {selectedCellData} />
             {:else}
                 <CellTypeControl {selectedCellData} />
+                <DefinitionControl
+                    x={store.selectedCell.x}
+                    y={store.selectedCell.y}
+                    data={selectedCellData}
+                />
             {/if}
         </div>
     {:else}
