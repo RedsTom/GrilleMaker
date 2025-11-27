@@ -1,5 +1,5 @@
 <script lang="ts">
-    import type { CellData } from "../store.svelte";
+    import type { CellData, ArrowDirection } from "../store.svelte";
     import { store } from "../store.svelte";
     import Arrow from "./Arrow.svelte";
 
@@ -124,7 +124,7 @@
                     >
                         <!-- Text with dynamic font size -->
                         <span
-                            class="definition-text font-bold break-words w-full text-center uppercase leading-tight"
+                            class="definition-text font-bold wrap-break-words w-full text-center uppercase leading-tight"
                             style="font-size: {fontSize}px; line-height: {fontSize +
                                 2}px;"
                         >
