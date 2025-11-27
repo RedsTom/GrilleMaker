@@ -1,47 +1,73 @@
-# Svelte + TS + Vite
+# GrilleMaker 🧩
 
-This template should help get you started developing with Svelte and TypeScript in Vite.
+> 🚀 **Application disponible en ligne :** [https://grillemaker.redstom.fr](https://grillemaker.redstom.fr)
 
-## Recommended IDE Setup
+> 💡 **Une idée ? Une suggestion ?** [Proposez vos fonctionnalités ici](https://github.com/RedsTom/GrilleMaker/issues/new)
 
-[VS Code](https://code.visualstudio.com/) + [Svelte](https://marketplace.visualstudio.com/items?itemName=svelte.svelte-vscode).
+GrilleMaker est un outil moderne et intuitif pour créer des grilles de mots fléchés et croisés. Conçu pour être simple d'utilisation tout en offrant des fonctionnalités puissantes pour les créateurs de jeux de lettres.
 
-## Need an official Svelte framework?
+![GrilleMaker Preview](public/preview.png)
 
-Check out [SvelteKit](https://github.com/sveltejs/kit#readme), which is also powered by Vite. Deploy anywhere with its serverless-first approach and adapt to various platforms, with out of the box support for TypeScript, SCSS, and Less, and easily-added support for mdsvex, GraphQL, PostCSS, Tailwind CSS, and more.
+## ✨ Fonctionnalités
 
-## Technical considerations
+- **Éditeur de Grille Intuitif** : Créez et modifiez votre grille facilement. Ajoutez ou supprimez des lignes et des colonnes à la volée.
+- **Gestion des Définitions** : Transformez n'importe quelle case en case de définition.
+  - Support des directions multiples (horizontal/vertical).
+  - Choix précis du type de flèche (courbée, droite, directions variées).
+- **Personnalisation** :
+  - Styles de bordures (solide, pointillés) pour délimiter les mots.
+  - Interface épurée et réactive.
+- **Modes d'Affichage** :
+  - **Mode Édition** : Pour construire votre grille.
+  - **Mode Aperçu** : Pour visualiser le rendu final comme un joueur.
+- **Sauvegarde Automatique** : Votre travail est sauvegardé automatiquement dans votre navigateur (LocalStorage).
+- **Impression Optimisée** : Une mise en page spécifique pour l'impression papier de vos grilles.
 
-**Why use this over SvelteKit?**
+## 🛠️ Stack Technique
 
-- It brings its own routing solution which might not be preferable for some users.
-- It is first and foremost a framework that just happens to use Vite under the hood, not a Vite app.
+Ce projet est construit avec les dernières technologies web pour assurer performance et maintenabilité :
 
-This template contains as little as possible to get started with Vite + TypeScript + Svelte, while taking into account the developer experience with regards to HMR and intellisense. It demonstrates capabilities on par with the other `create-vite` templates and is a good starting point for beginners dipping their toes into a Vite + Svelte project.
+- **[Svelte 5](https://svelte.dev/)** : Framework UI réactif (utilisation des Runes).
+- **[TypeScript](https://www.typescriptlang.org/)** : Pour un code robuste et typé.
+- **[TailwindCSS](https://tailwindcss.com/)** : Pour un styling rapide et moderne.
+- **[Vite](https://vitejs.dev/)** : Build tool ultra-rapide.
+- **[Lucide Svelte](https://lucide.dev/)** : Icônes vectorielles légères.
 
-Should you later need the extended capabilities and extensibility provided by SvelteKit, the template has been structured similarly to SvelteKit so that it is easy to migrate.
+## 🚀 Installation et Démarrage
 
-**Why `global.d.ts` instead of `compilerOptions.types` inside `jsconfig.json` or `tsconfig.json`?**
+### Prérequis
 
-Setting `compilerOptions.types` shuts out all other types not explicitly listed in the configuration. Using triple-slash references keeps the default TypeScript setting of accepting type information from the entire workspace, while also adding `svelte` and `vite/client` type information.
+- Node.js (version récente recommandée)
+- npm, pnpm ou bun
 
-**Why include `.vscode/extensions.json`?**
+### Installation
 
-Other templates indirectly recommend extensions via the README, but this file allows VS Code to prompt the user to install the recommended extension upon opening the project.
+1. Clonez le dépôt :
+   ```bash
+   git clone https://github.com/RedsTom/GrilleMaker.git
+   cd GrilleMaker
+   ```
 
-**Why enable `allowJs` in the TS template?**
+2. Installez les dépendances :
+   ```bash
+   npm install
+   # ou
+   bun install
+   ```
 
-While `allowJs: false` would indeed prevent the use of `.js` files in the project, it does not prevent the use of JavaScript syntax in `.svelte` files. In addition, it would force `checkJs: false`, bringing the worst of both worlds: not being able to guarantee the entire codebase is TypeScript, and also having worse typechecking for the existing JavaScript. In addition, there are valid use cases in which a mixed codebase may be relevant.
+3. Lancez le serveur de développement :
+   ```bash
+   npm run dev
+   # ou
+   bun dev
+   ```
 
-**Why is HMR not preserving my local component state?**
+4. Ouvrez votre navigateur sur `http://localhost:5173` (ou le port indiqué).
 
-HMR state preservation comes with a number of gotchas! It has been disabled by default in both `svelte-hmr` and `@sveltejs/vite-plugin-svelte` due to its often surprising behavior. You can read the details [here](https://github.com/rixo/svelte-hmr#svelte-hmr).
+## 🤝 Contribuer
 
-If you have state that's important to retain within a component, consider creating an external store which would not be replaced by HMR.
+Ce projet est communautaire ! Les suggestions et contributions sont les bienvenues. N'hésitez pas à ouvrir une issue pour proposer une idée ou signaler un bug.
 
-```ts
-// store.ts
-// An extremely simple external store
-import { writable } from 'svelte/store'
-export default writable(0)
-```
+## 📄 Licence
+
+Distribué sous licence MIT. Voir le fichier `LICENSE` pour plus d'informations.
