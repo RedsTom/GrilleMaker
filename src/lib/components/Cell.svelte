@@ -105,10 +105,10 @@
     class:border-left-dashed={y === 0 && data.borders?.left === "dashed"}
     class:no-top-border={x > 0}
     class:no-left-border={y > 0}
-    onclick={() => store.selectCell(x, y, true)}
+    onclick={() => store.mode !== "preview" && store.selectCell(x, y, true)}
     role="textbox"
-    tabindex="0"
-    onkeydown={handleKeyDown}
+    tabindex={store.mode === "preview" ? -1 : 0}
+    onkeydown={(e) => store.mode !== "preview" && handleKeyDown(e)}
 >
     {#if data.type === "definition"}
         <div class="w-full h-full flex flex-col">
@@ -144,7 +144,7 @@
                 <span class="opacity-50 text-xs font-bold">DEF</span>
             {/if}
         </div>
-    {:else}
+    {:else if store.mode !== "preview"}
         {data.value}
     {/if}
 </div>
