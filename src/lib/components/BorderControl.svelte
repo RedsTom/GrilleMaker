@@ -1,5 +1,6 @@
 <script lang="ts">
     import { store } from "../store.svelte";
+    import SectionHeader from "./ui/SectionHeader.svelte";
 
     let { selectedCellData } = $props<{ selectedCellData: any }>();
 
@@ -43,9 +44,7 @@
 </script>
 
 <div>
-    <h3 class="text-xs font-bold text-amber-800 uppercase tracking-widest mb-3">
-        Bordures
-    </h3>
+    <SectionHeader title="Bordures" />
 
     <div class="space-y-4">
         <div

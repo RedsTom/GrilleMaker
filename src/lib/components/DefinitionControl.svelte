@@ -2,6 +2,8 @@
     import { store } from "../store.svelte";
     import type { CellData, Definition } from "../store.svelte";
     import DefinitionList from "./definitions/DefinitionList.svelte";
+    import SectionHeader from "./ui/SectionHeader.svelte";
+    import Button from "./ui/Button.svelte";
 
     let { x, y, data } = $props<{
         x: number;
@@ -42,16 +44,11 @@
 </script>
 
 <div class="flex flex-col gap-4">
-    <h3
-        class="font-bold text-amber-900 border-b border-amber-200 pb-2 flex justify-between items-center"
-    >
-        <span>Définitions</span>
-        <span
-            class="text-xs font-normal text-amber-700 bg-amber-100 px-2 py-0.5 rounded-full"
-        >
-            {data.definitions?.length || 0}
-        </span>
-    </h3>
+    <SectionHeader
+        title="Définitions"
+        badge={data.definitions?.length || 0}
+        withBorder={true}
+    />
 
     <DefinitionList
         definitions={data.definitions || []}
@@ -60,9 +57,11 @@
         onDelete={removeDefinition}
     />
 
-    <button
+    <Button
         onclick={addDefinition}
-        class="w-full py-2 px-4 bg-amber-100 hover:bg-amber-200 text-amber-800 font-bold rounded-lg transition-colors flex items-center justify-center gap-2 border border-amber-300 border-dashed hover:border-solid"
+        variant="primary"
+        fullWidth={true}
+        class="border-dashed hover:border-solid"
     >
         <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -77,7 +76,7 @@
             ><path d="M12 5v14" /><path d="M5 12h14" /></svg
         >
         Ajouter une définition
-    </button>
+    </Button>
 </div>
 
 <style>
