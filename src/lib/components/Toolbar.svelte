@@ -11,7 +11,7 @@
 
 <div class="toolbar-container">
   <div class="flex items-center gap-6">
-    <h1 class="title">Grilleur</h1>
+    <h1 class="title">GrilleMaker</h1>
 
     {#if store.mode === "edit"}
       <!-- Controls moved to Toolbox -->
