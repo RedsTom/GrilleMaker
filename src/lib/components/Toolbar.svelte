@@ -36,7 +36,7 @@
   @reference "tailwindcss";
 
   .toolbar-container {
-    @apply flex justify-between items-center px-6 py-3 bg-orange-100/90 backdrop-blur shadow-sm rounded-lg border border-orange-200 transition-all duration-300;
+    @apply flex flex-col sm:flex-row justify-between items-center gap-4 px-6 py-3 bg-orange-100/90 backdrop-blur shadow-sm rounded-lg border border-orange-200 transition-all duration-300;
   }
 
   .title {

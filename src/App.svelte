@@ -93,13 +93,12 @@
     }
 
     .main-layout {
-        @apply flex gap-6 items-start flex-grow overflow-hidden min-h-0;
+        @apply flex flex-col lg:flex-row gap-4 lg:gap-6 items-start flex-grow min-h-0 overflow-hidden;
     }
 
     .grid-section {
-        @apply flex-grow h-full overflow-auto rounded-lg border border-orange-200/30 bg-white/30 backdrop-blur-sm;
-        flex-basis: 66.666%;
-        max-width: 66.666%;
+        @apply flex-grow overflow-auto rounded-lg border border-orange-200/30 bg-white/30 backdrop-blur-sm;
+        @apply w-full lg:w-2/3 lg:h-full;
     }
 
     .grid-container {
@@ -107,9 +106,12 @@
     }
 
     .toolbox-section {
-        @apply shrink-0 h-full overflow-auto;
-        flex-basis: 33.333%;
-        max-width: 33.333%;
+        @apply shrink-0 overflow-auto;
+        @apply w-full h-1/3 lg:w-1/3 lg:h-full;
+    }
+
+    .print-footer {
+        display: none;
     }
 
     @media print {
