@@ -2,11 +2,27 @@ export type CellType = 'standard' | 'definition';
 export type SelectionDirection = 'row' | 'column';
 export type BorderStyle = 'solid' | 'dashed';
 
+export type ArrowDirection =
+    // Flèches courbées (pour les coins)
+    | 'up-right'
+    | 'up-left'
+    | 'down-right'
+    | 'down-left'
+    | 'right-down'
+    | 'right-up'
+    | 'left-down'
+    | 'left-up'
+    // Flèches droites
+    | 'up'
+    | 'down'
+    | 'left'
+    | 'right';
+
 export interface Definition {
     id: string;
     text: string;
     direction: 'horizontal' | 'vertical';
-    arrow: 'left' | 'right' | 'up' | 'down';
+    arrow: ArrowDirection;
 }
 
 export interface CellData {
@@ -143,6 +159,12 @@ export class CrosswordStore {
         }
     }
 
+    setDefinitions(x: number, y: number, definitions: Definition[]) {
+        if (this.isValidCell(x, y)) {
+            this.grid[x][y].definitions = definitions;
+        }
+    }
+
     setBorderStyle(x: number, y: number, side: 'top' | 'right' | 'bottom' | 'left', style: BorderStyle) {
         if (this.isValidCell(x, y)) {
             if (!this.grid[x][y].borders) {
@@ -240,11 +262,38 @@ export class CrosswordStore {
                     this.rows = data.rows;
                     this.cols = data.cols;
                     this.grid = data.grid;
+
+                    // Migration: convertir les anciennes flèches simples en flèches pliées
+                    this.migrateOldArrows();
                 } catch (e) {
                     console.error('Failed to load state', e);
                 }
             }
         }
+    }
+
+    // Migration des anciennes flèches vers le nouveau format
+    private migrateOldArrows() {
+        const oldToNew: Record<string, ArrowDirection> = {
+            'right': 'right',
+            'left': 'left',
+            'down': 'down',
+            'up': 'up'
+        };
+
+        this.grid.forEach((row, x) => {
+            row.forEach((cell, y) => {
+                if (cell.type === 'definition' && cell.definitions) {
+                    cell.definitions.forEach(def => {
+                        // @ts-ignore - migration temporaire
+                        if (def.arrow && oldToNew[def.arrow]) {
+                            // @ts-ignore
+                            def.arrow = oldToNew[def.arrow];
+                        }
+                    });
+                }
+            });
+        });
     }
 }
 

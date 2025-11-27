@@ -1,6 +1,7 @@
 <script lang="ts">
     import { store } from "../store.svelte";
-    import type { CellData, Definition } from "../store.svelte";
+    import type { CellData, Definition, ArrowDirection } from "../store.svelte";
+    import Arrow from "./Arrow.svelte";
 
     let { x, y, data } = $props<{
         x: number;
@@ -8,84 +9,123 @@
         data: CellData;
     }>();
 
-    let editingId = $state<string | null>(null);
-    let newDefText = $state("");
-    let newDefDirection = $state<"horizontal" | "vertical">("horizontal");
-    let newDefArrow = $state<"left" | "right" | "up" | "down">("right");
-
-    function resetForm() {
-        editingId = null;
-        newDefText = "";
-        newDefDirection = "horizontal";
-        newDefArrow = "right";
-    }
-
-    function startEditing(def: Definition) {
-        editingId = def.id;
-        newDefText = def.text;
-        newDefDirection = def.direction;
-        newDefArrow = def.arrow;
-    }
-
-    function saveDefinition() {
-        if (!newDefText.trim()) return;
-
-        if (editingId) {
-            store.updateDefinition(x, y, editingId, {
-                text: newDefText,
-                direction: newDefDirection,
-                arrow: newDefArrow,
-            });
-        } else {
-            store.addDefinition(x, y, {
-                text: newDefText,
-                direction: newDefDirection,
-                arrow: newDefArrow,
-            });
-        }
-        resetForm();
+    function addDefinition() {
+        store.addDefinition(x, y, {
+            text: "",
+            direction: "horizontal",
+            arrow: "right",
+        });
     }
 
     function removeDefinition(id: string) {
         store.removeDefinition(x, y, id);
-        if (editingId === id) {
-            resetForm();
+    }
+
+    function updateDefinition(id: string, updates: Partial<Definition>) {
+        store.updateDefinition(x, y, id, updates);
+    }
+
+    function moveDefinition(index: number, direction: "up" | "down") {
+        if (!data.definitions) return;
+
+        const newDefs = [...data.definitions];
+        const targetIndex = direction === "up" ? index - 1 : index + 1;
+
+        if (targetIndex >= 0 && targetIndex < newDefs.length) {
+            [newDefs[index], newDefs[targetIndex]] = [
+                newDefs[targetIndex],
+                newDefs[index],
+            ];
+            store.setDefinitions(x, y, newDefs);
+        }
+    }
+
+    function getArrowMatrix(dir: "horizontal" | "vertical") {
+        if (dir === "vertical") {
+            return [
+                ["left-up", "up", "right-up"] as ArrowDirection[],
+                ["left-down", "down", "right-down"] as ArrowDirection[],
+            ];
+        } else {
+            return [
+                ["up-left", "left", "down-left"] as ArrowDirection[],
+                ["up-right", "right", "down-right"] as ArrowDirection[],
+            ];
         }
     }
 </script>
 
 <div class="flex flex-col gap-4">
-    <h3 class="font-bold text-amber-900 border-b border-amber-200 pb-2">
-        Définitions
+    <h3
+        class="font-bold text-amber-900 border-b border-amber-200 pb-2 flex justify-between items-center"
+    >
+        <span>Définitions</span>
+        <span
+            class="text-xs font-normal text-amber-700 bg-amber-100 px-2 py-0.5 rounded-full"
+        >
+            {data.definitions?.length || 0}
+        </span>
     </h3>
-    <!-- Liste des définitions existantes -->
-    <div class="space-y-2 max-h-60 overflow-y-auto pr-1">
+
+    <div class="space-y-4 max-h-[500px] overflow-y-auto pr-1">
         {#if data.definitions && data.definitions.length > 0}
-            {#each data.definitions as def (def.id)}
+            {#each data.definitions as def, index (def.id)}
                 <div
-                    class="p-3 rounded-lg border shadow-sm flex flex-col gap-2 group transition-all cursor-pointer relative {editingId ===
-                    def.id
-                        ? 'bg-amber-100 border-amber-400'
-                        : 'bg-white/60 border-amber-200 hover:bg-white/80'}"
-                    onclick={() => startEditing(def)}
+                    class="p-3 rounded-lg border border-amber-200 bg-white/60 shadow-sm flex flex-col gap-3 transition-all hover:bg-white hover:shadow-md group relative"
                 >
-                    <div class="flex justify-between items-start gap-2">
-                        <span
-                            class="text-sm font-medium text-amber-900 break-words leading-tight uppercase"
-                            >{def.text}</span
-                        >
+                    <!-- Tools (Move/Delete) -->
+                    <div class="flex justify-end gap-2 mb-1">
                         <button
-                            onclick={(e) => {
-                                e.stopPropagation();
-                                removeDefinition(def.id);
-                            }}
-                            class="text-amber-400 hover:text-red-500 transition-colors p-1 -mt-1 -mr-1"
+                            onclick={() => moveDefinition(index, "up")}
+                            disabled={index === 0}
+                            class="p-1.5 bg-amber-100 text-amber-600 hover:bg-amber-200 hover:text-amber-800 disabled:opacity-30 disabled:cursor-not-allowed rounded transition-colors"
+                            title="Monter"
+                        >
+                            <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                width="14"
+                                height="14"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                stroke-width="3"
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                                ><path d="m18 15-6-6-6 6" /></svg
+                            >
+                        </button>
+                        <button
+                            onclick={() => moveDefinition(index, "down")}
+                            disabled={index ===
+                                (data.definitions?.length || 0) - 1}
+                            class="p-1.5 bg-amber-100 text-amber-600 hover:bg-amber-200 hover:text-amber-800 disabled:opacity-30 disabled:cursor-not-allowed rounded transition-colors"
+                            title="Descendre"
+                        >
+                            <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                width="14"
+                                height="14"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                stroke-width="3"
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                                ><path d="m6 9 6 6 6-6" /></svg
+                            >
+                        </button>
+                        <div
+                            class="w-px h-5 bg-amber-200 mx-1 self-center"
+                        ></div>
+                        <button
+                            onclick={() => removeDefinition(def.id)}
+                            class="p-1.5 bg-red-50 text-red-500 hover:bg-red-100 hover:text-red-700 rounded transition-colors"
                             title="Supprimer"
                         >
                             <svg
                                 xmlns="http://www.w3.org/2000/svg"
-                                width="16"
-                                height="16"
+                                width="14"
+                                height="14"
                                 viewBox="0 0 24 24"
                                 fill="none"
                                 stroke="currentColor"
@@ -98,206 +138,137 @@
                             >
                         </button>
                     </div>
-                    <div
-                        class="flex items-center gap-3 text-xs text-amber-700 bg-amber-50/50 p-1.5 rounded"
-                    >
-                        <div
-                            class="flex items-center gap-1"
-                            title="Direction du mot"
-                        >
-                            <span class="opacity-50">Mot:</span>
-                            <span class="font-bold"
-                                >{def.direction === "horizontal"
-                                    ? "↔"
-                                    : "↕"}</span
-                            >
-                        </div>
-                        <div class="w-px h-3 bg-amber-200"></div>
-                        <div
-                            class="flex items-center gap-1"
-                            title="Position de la flèche"
-                        >
-                            <span class="opacity-50">Flèche:</span>
-                            <span class="font-bold">
-                                {#if def.arrow === "left"}←{/if}
-                                {#if def.arrow === "right"}→{/if}
-                                {#if def.arrow === "up"}↑{/if}
-                                {#if def.arrow === "down"}↓{/if}
-                            </span>
-                        </div>
+
+                    <!-- 1. Input Text -->
+                    <div>
+                        <input
+                            type="text"
+                            value={def.text}
+                            oninput={(e) =>
+                                updateDefinition(def.id, {
+                                    text: e.currentTarget.value,
+                                })}
+                            placeholder="DÉFINITION..."
+                            class="w-full px-3 py-2 text-xs font-bold text-amber-900 bg-white border-2 border-amber-200 rounded-md hover:border-amber-300 focus:border-amber-500 focus:outline-none transition-colors uppercase placeholder-amber-300/50 shadow-sm"
+                        />
                     </div>
 
-                    {#if editingId === def.id}
-                        <div
-                            class="absolute -right-1 -top-1 w-3 h-3 bg-amber-500 rounded-full animate-pulse"
-                        ></div>
-                    {/if}
+                    <!-- 2. Button Group (Horizontal/Vertical) -->
+                    <div
+                        class="flex bg-amber-50 p-1 rounded-lg border border-amber-100"
+                    >
+                        <button
+                            class="flex-1 py-1 px-2 text-xs font-medium rounded transition-all flex items-center justify-center gap-2"
+                            class:bg-white={def.direction === "horizontal"}
+                            class:text-amber-900={def.direction ===
+                                "horizontal"}
+                            class:shadow-sm={def.direction === "horizontal"}
+                            class:text-amber-600={def.direction !==
+                                "horizontal"}
+                            class:hover:bg-amber-100={def.direction !==
+                                "horizontal"}
+                            onclick={() =>
+                                updateDefinition(def.id, {
+                                    direction: "horizontal",
+                                    arrow: "right",
+                                })}
+                        >
+                            <span>↔ Horizontal</span>
+                        </button>
+                        <button
+                            class="flex-1 py-1 px-2 text-xs font-medium rounded transition-all flex items-center justify-center gap-2"
+                            class:bg-white={def.direction === "vertical"}
+                            class:text-amber-900={def.direction === "vertical"}
+                            class:shadow-sm={def.direction === "vertical"}
+                            class:text-amber-600={def.direction !== "vertical"}
+                            class:hover:bg-amber-100={def.direction !==
+                                "vertical"}
+                            onclick={() =>
+                                updateDefinition(def.id, {
+                                    direction: "vertical",
+                                    arrow: "down",
+                                })}
+                        >
+                            <span>↕ Vertical</span>
+                        </button>
+                    </div>
+
+                    <!-- 3. 3x2 Matrix of Buttons -->
+                    <div class="grid grid-cols-3 gap-1.5">
+                        {#each getArrowMatrix(def.direction) as row}
+                            {#each row as arrow}
+                                <button
+                                    class="arrow-btn-preview"
+                                    class:active={def.arrow === arrow}
+                                    onclick={() =>
+                                        updateDefinition(def.id, { arrow })}
+                                    title={arrow}
+                                >
+                                    <div class="arrow-preview-container">
+                                        <Arrow direction={arrow} />
+                                    </div>
+                                </button>
+                            {/each}
+                        {/each}
+                    </div>
                 </div>
             {/each}
         {:else}
-            <div class="text-sm text-amber-700/60 italic text-center py-2">
-                Aucune définition
+            <div
+                class="text-sm text-amber-700/60 italic text-center py-8 border-2 border-dashed border-amber-100 rounded-lg"
+            >
+                Aucune définition pour cette case
             </div>
         {/if}
     </div>
 
-    <!-- Formulaire d'ajout/édition -->
-    <div
-        class="flex flex-col gap-3 p-3 bg-amber-50/50 rounded-lg border border-amber-200 shadow-inner"
+    <button
+        onclick={addDefinition}
+        class="w-full py-2 px-4 bg-amber-100 hover:bg-amber-200 text-amber-800 font-bold rounded-lg transition-colors flex items-center justify-center gap-2 border border-amber-300 border-dashed hover:border-solid"
     >
-        <div class="flex justify-between items-center">
-            <span
-                class="text-xs font-bold text-amber-800 uppercase tracking-wider"
-            >
-                {editingId ? "Modifier la définition" : "Nouvelle définition"}
-            </span>
-            {#if editingId}
-                <button
-                    onclick={resetForm}
-                    class="text-xs text-amber-600 hover:text-amber-800 underline"
-                    >Annuler</button
-                >
-            {/if}
-        </div>
-
-        <div class="flex flex-col gap-1">
-            <label
-                class="text-[10px] font-bold text-amber-700/70 uppercase tracking-wider"
-                >Texte</label
-            >
-            <input
-                type="text"
-                bind:value={newDefText}
-                placeholder="Ex: CAPITALE..."
-                class="w-full px-3 py-2 text-sm border border-amber-200 rounded bg-white focus:outline-none focus:border-amber-400 focus:ring-2 focus:ring-amber-100 transition-all uppercase"
-                onkeydown={(e) => e.key === "Enter" && saveDefinition()}
-            />
-        </div>
-
-        <div class="flex flex-col gap-3">
-            <div class="flex flex-col gap-1">
-                <label
-                    class="text-[10px] font-bold text-amber-700/70 uppercase tracking-wider"
-                    >Direction du mot</label
-                >
-                <div
-                    class="flex bg-white rounded border border-amber-200 p-0.5"
-                >
-                    <button
-                        class="flex-1 py-1 text-xs font-medium rounded transition-colors flex items-center justify-center gap-1"
-                        class:bg-amber-100={newDefDirection === "horizontal"}
-                        class:text-amber-900={newDefDirection === "horizontal"}
-                        class:text-amber-500={newDefDirection !== "horizontal"}
-                        onclick={() => (newDefDirection = "horizontal")}
-                    >
-                        <span>↔</span> Horizontal
-                    </button>
-                    <button
-                        class="flex-1 py-1 text-xs font-medium rounded transition-colors flex items-center justify-center gap-1"
-                        class:bg-amber-100={newDefDirection === "vertical"}
-                        class:text-amber-900={newDefDirection === "vertical"}
-                        class:text-amber-500={newDefDirection !== "vertical"}
-                        onclick={() => (newDefDirection = "vertical")}
-                    >
-                        <span>↕</span> Vertical
-                    </button>
-                </div>
-            </div>
-
-            <div class="flex flex-col gap-1">
-                <label
-                    class="text-[10px] font-bold text-amber-700/70 uppercase tracking-wider"
-                    >Position de la flèche</label
-                >
-                <div class="grid grid-cols-4 gap-1">
-                    <button
-                        class="py-1.5 rounded border transition-all flex items-center justify-center"
-                        class:bg-amber-100={newDefArrow === "left"}
-                        class:border-amber-400={newDefArrow === "left"}
-                        class:text-amber-900={newDefArrow === "left"}
-                        class:bg-white={newDefArrow !== "left"}
-                        class:border-amber-200={newDefArrow !== "left"}
-                        class:text-amber-500={newDefArrow !== "left"}
-                        onclick={() => (newDefArrow = "left")}
-                        title="Gauche">←</button
-                    >
-                    <button
-                        class="py-1.5 rounded border transition-all flex items-center justify-center"
-                        class:bg-amber-100={newDefArrow === "up"}
-                        class:border-amber-400={newDefArrow === "up"}
-                        class:text-amber-900={newDefArrow === "up"}
-                        class:bg-white={newDefArrow !== "up"}
-                        class:border-amber-200={newDefArrow !== "up"}
-                        class:text-amber-500={newDefArrow !== "up"}
-                        onclick={() => (newDefArrow = "up")}
-                        title="Haut">↑</button
-                    >
-                    <button
-                        class="py-1.5 rounded border transition-all flex items-center justify-center"
-                        class:bg-amber-100={newDefArrow === "down"}
-                        class:border-amber-400={newDefArrow === "down"}
-                        class:text-amber-900={newDefArrow === "down"}
-                        class:bg-white={newDefArrow !== "down"}
-                        class:border-amber-200={newDefArrow !== "down"}
-                        class:text-amber-500={newDefArrow !== "down"}
-                        onclick={() => (newDefArrow = "down")}
-                        title="Bas">↓</button
-                    >
-                    <button
-                        class="py-1.5 rounded border transition-all flex items-center justify-center"
-                        class:bg-amber-100={newDefArrow === "right"}
-                        class:border-amber-400={newDefArrow === "right"}
-                        class:text-amber-900={newDefArrow === "right"}
-                        class:bg-white={newDefArrow !== "right"}
-                        class:border-amber-200={newDefArrow !== "right"}
-                        class:text-amber-500={newDefArrow !== "right"}
-                        onclick={() => (newDefArrow = "right")}
-                        title="Droite">→</button
-                    >
-                </div>
-            </div>
-        </div>
-
-        <button
-            onclick={saveDefinition}
-            disabled={!newDefText.trim()}
-            class="mt-1 bg-amber-500 hover:bg-amber-600 disabled:opacity-50 disabled:cursor-not-allowed text-white text-sm font-bold py-2 px-4 rounded shadow-sm hover:shadow transition-all active:scale-95 flex items-center justify-center gap-2"
+        <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="18"
+            height="18"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            ><path d="M12 5v14" /><path d="M5 12h14" /></svg
         >
-            {#if editingId}
-                <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="16"
-                    height="16"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    stroke-width="2"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    ><path d="M12 20h9" /><path
-                        d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"
-                    /></svg
-                >
-                Modifier
-            {:else}
-                <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="16"
-                    height="16"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    stroke-width="2"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    ><path d="M5 12h14" /><path d="M12 5v14" /></svg
-                >
-                Ajouter
-            {/if}
-        </button>
-    </div>
+        Ajouter une définition
+    </button>
 </div>
 
 <style>
     @reference "tailwindcss";
+
+    .arrow-btn-preview {
+        @apply py-1 px-1 rounded border transition-all flex items-center justify-center relative h-8;
+        @apply bg-white border-amber-100 text-amber-300;
+        @apply hover:bg-amber-50 hover:border-amber-300 hover:text-amber-500;
+    }
+
+    .arrow-btn-preview.active {
+        @apply bg-amber-100 border-amber-400 text-amber-900;
+        box-shadow: inset 0 1px 2px rgba(180, 83, 9, 0.1);
+    }
+
+    .arrow-preview-container {
+        @apply relative w-full h-full flex items-center justify-center;
+    }
+
+    /* Fix alignment by overriding Arrow component styles */
+    .arrow-preview-container :global(.arrow-container) {
+        position: relative !important;
+        top: auto !important;
+        left: auto !important;
+        right: auto !important;
+        bottom: auto !important;
+        transform: none !important;
+        width: 100% !important;
+        height: 100% !important;
+    }
 </style>

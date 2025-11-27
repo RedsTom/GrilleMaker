@@ -1,6 +1,7 @@
 <script lang="ts">
     import type { CellData } from "../store.svelte";
     import { store } from "../store.svelte";
+    import Arrow from "./Arrow.svelte";
 
     let { x, y, data, isSelected, onclick } = $props<{
         x: number;
@@ -13,6 +14,23 @@
     let cellElement: HTMLDivElement;
 
     let isInSelection = $derived(store.isRowOrColumnSelected(x, y));
+
+    // Calcul dynamique de la taille de police pour les définitions
+    function calculateFontSize(text: string, numDefinitions: number): number {
+        const baseSize = 12;
+        const minSize = 8;
+        const textLength = text.length;
+
+        // Facteur basé sur la longueur du texte
+        let size = Math.max(minSize, Math.min(baseSize, 90 / textLength));
+
+        // Réduction supplémentaire si plusieurs définitions
+        if (numDefinitions > 1) {
+            size = size * (1 - (numDefinitions - 1) * 0.1);
+        }
+
+        return Math.max(minSize, Math.min(baseSize, size));
+    }
 
     $effect(() => {
         if (isSelected && cellElement) {
@@ -93,111 +111,34 @@
     onkeydown={handleKeyDown}
 >
     {#if data.type === "definition"}
-        <div class="w-full h-full flex flex-col relative">
+        <div class="w-full h-full flex flex-col">
             {#if data.definitions && data.definitions.length > 0}
                 {#each data.definitions as def, i}
+                    {@const fontSize = calculateFontSize(
+                        def.text,
+                        data.definitions.length,
+                    )}
                     <div
-                        class="flex-1 w-full flex flex-col items-center justify-center relative min-h-0 px-0.5 {i <
-                        data.definitions.length - 1
-                            ? 'border-b border-amber-900/30'
-                            : ''}"
+                        class="definition-section flex-1 w-full flex items-center justify-center min-h-0 px-1 py-0.5"
+                        class:has-border={i < data.definitions.length - 1}
                     >
-                        <!-- Text -->
+                        <!-- Text with dynamic font size -->
                         <span
-                            class="text-[0.6rem] leading-[0.7rem] font-bold break-words w-full text-center uppercase tracking-tight"
+                            class="definition-text font-bold break-words w-full text-center uppercase leading-tight"
+                            style="font-size: {fontSize}px; line-height: {fontSize +
+                                2}px;"
                         >
                             {def.text}
                         </span>
-
-                        <!-- Arrow -->
-                        <div
-                            class="absolute flex items-center justify-center text-amber-900 pointer-events-none z-10"
-                            class:right-0={def.arrow === "right"}
-                            class:bottom-0={def.arrow === "down"}
-                            class:left-0={def.arrow === "left"}
-                            class:top-0={def.arrow === "up"}
-                            class:w-full={def.arrow === "up" ||
-                                def.arrow === "down"}
-                            class:h-full={def.arrow === "left" ||
-                                def.arrow === "right"}
-                            style="
-                                {def.arrow === 'right' ? 'right: -4px;' : ''}
-                                {def.arrow === 'left' ? 'left: -4px;' : ''}
-                                {def.arrow === 'up' ? 'top: -4px;' : ''}
-                                {def.arrow === 'down' ? 'bottom: -4px;' : ''}
-                            "
-                        >
-                            <div
-                                class="absolute flex items-center justify-center bg-amber-800 rounded-full"
-                                class:right-0={def.arrow === "right"}
-                                class:bottom-0={def.arrow === "down"}
-                                class:left-0={def.arrow === "left"}
-                                class:top-0={def.arrow === "up"}
-                            >
-                                {#if def.arrow === "right"}
-                                    <svg
-                                        width="12"
-                                        height="12"
-                                        viewBox="0 0 24 24"
-                                        fill="none"
-                                        stroke="currentColor"
-                                        stroke-width="4"
-                                        stroke-linecap="round"
-                                        stroke-linejoin="round"
-                                        class="text-white drop-shadow-sm"
-                                        ><path d="M5 12h14" /><path
-                                            d="m12 5 7 7-7 7"
-                                        /></svg
-                                    >
-                                {:else if def.arrow === "down"}
-                                    <svg
-                                        width="12"
-                                        height="12"
-                                        viewBox="0 0 24 24"
-                                        fill="none"
-                                        stroke="currentColor"
-                                        stroke-width="4"
-                                        stroke-linecap="round"
-                                        stroke-linejoin="round"
-                                        class="text-white drop-shadow-sm"
-                                        ><path d="M12 5v14" /><path
-                                            d="m19 12-7 7-7-7"
-                                        /></svg
-                                    >
-                                {:else if def.arrow === "left"}
-                                    <svg
-                                        width="12"
-                                        height="12"
-                                        viewBox="0 0 24 24"
-                                        fill="none"
-                                        stroke="currentColor"
-                                        stroke-width="4"
-                                        stroke-linecap="round"
-                                        stroke-linejoin="round"
-                                        class="text-white drop-shadow-sm"
-                                        ><path d="M19 12H5" /><path
-                                            d="m12 19-7-7 7-7"
-                                        /></svg
-                                    >
-                                {:else if def.arrow === "up"}
-                                    <svg
-                                        width="12"
-                                        height="12"
-                                        viewBox="0 0 24 24"
-                                        fill="none"
-                                        stroke="currentColor"
-                                        stroke-width="4"
-                                        stroke-linecap="round"
-                                        stroke-linejoin="round"
-                                        class="text-white drop-shadow-sm"
-                                        ><path d="M12 19V5" /><path
-                                            d="m5 12 7-7 7 7"
-                                        /></svg
-                                    >
-                                {/if}
-                            </div>
-                        </div>
                     </div>
+                {/each}
+                <!-- Arrows positioned relative to the cell, not the sections -->
+                {#each data.definitions as def, i}
+                    <Arrow
+                        direction={def.arrow}
+                        sectionIndex={i}
+                        totalSections={data.definitions.length}
+                    />
                 {/each}
             {:else}
                 <span class="opacity-50 text-xs font-bold">DEF</span>
@@ -233,6 +174,22 @@
     .definition {
         @apply bg-amber-800 text-yellow-50 border-amber-900 text-xs p-1 text-center leading-tight font-bold;
         box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.2);
+        overflow: visible;
+        position: relative;
+    }
+
+    .definition-section {
+        @apply transition-all;
+    }
+
+    .definition-section.has-border {
+        border-bottom: 2px solid rgba(180, 83, 9, 0.4);
+    }
+
+    .definition-text {
+        @apply wrap-break-word hyphens-auto;
+        word-break: break-word;
+        overflow-wrap: break-word;
     }
 
     .selected {
