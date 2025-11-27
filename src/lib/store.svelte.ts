@@ -23,6 +23,7 @@ export interface Definition {
     text: string;
     direction: 'horizontal' | 'vertical';
     arrow: ArrowDirection;
+    fontSize?: number;
 }
 
 export interface CellData {

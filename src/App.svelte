@@ -1,5 +1,4 @@
 <script lang="ts">
-    import { onMount } from "svelte";
     import Grid from "./lib/components/Grid.svelte";
     import Toolbar from "./lib/components/Toolbar.svelte";
     import Toolbox from "./lib/components/Toolbox.svelte";
@@ -7,8 +6,6 @@
 
     let gridContainer: HTMLDivElement;
     let toolboxContainer: HTMLDivElement;
-    let toolbarWrapper: HTMLDivElement;
-    let isToolbarSticky = $state(false);
 
     function handleClickOutside(e: MouseEvent) {
         if (gridContainer && !gridContainer.contains(e.target as Node)) {
@@ -22,44 +19,33 @@
             store.deselectCell();
         }
     }
-
-    function handleScroll() {
-        if (toolbarWrapper) {
-            isToolbarSticky = window.scrollY > 0;
-        }
-    }
-
-    function updateToolbarHeight() {
-        if (toolbarWrapper) {
-            const height = toolbarWrapper.offsetHeight;
-            toolbarWrapper.style.setProperty('--toolbar-height', `${height}px`);
-        }
-    }
-
-    onMount(() => {
-        window.addEventListener("scroll", handleScroll);
-        updateToolbarHeight();
-        window.addEventListener("resize", updateToolbarHeight);
-        return () => {
-            window.removeEventListener("scroll", handleScroll);
-            window.removeEventListener("resize", updateToolbarHeight);
-        };
-    });
 </script>
 
 <main class="app-container" onclick={handleClickOutside}>
     <div class="content-wrapper">
-        <div class="toolbar-wrapper" bind:this={toolbarWrapper} class:sticky={isToolbarSticky}>
-            <Toolbar {isToolbarSticky} />
+        <div class="toolbar-wrapper">
+            <Toolbar />
         </div>
 
         <div class="main-layout">
-            <div class="grid-container" bind:this={gridContainer}>
-                <Grid />
+            <div class="grid-section">
+                <div
+                    class="grid-container"
+                    bind:this={gridContainer}
+                    onclick={(e) => {
+                        if (e.target === e.currentTarget) store.deselectCell();
+                    }}
+                    role="button"
+                    tabindex="-1"
+                    onkeydown={(e) =>
+                        e.key === "Escape" && store.deselectCell()}
+                >
+                    <Grid />
+                </div>
             </div>
 
             {#if store.mode === "edit"}
-                <div class="toolbox-wrapper" bind:this={toolboxContainer}>
+                <div class="toolbox-section" bind:this={toolboxContainer}>
                     <Toolbox />
                 </div>
             {/if}
@@ -71,7 +57,7 @@
     @reference "tailwindcss";
 
     .app-container {
-        @apply min-h-screen flex flex-col items-center py-10 bg-amber-50 transition-colors duration-300;
+        @apply h-screen w-screen flex flex-col bg-amber-50 overflow-hidden;
         background-image: repeating-linear-gradient(
                 90deg,
                 transparent,
@@ -89,32 +75,30 @@
     }
 
     .content-wrapper {
-        @apply w-full max-w-6xl px-4;
-    }
-
-    .main-layout {
-        @apply flex gap-8 justify-center;
-        align-items: flex-start;
-    }
-
-    .grid-container {
-        @apply shrink-0;
-    }
-
-    .toolbox-container {
-        @apply shrink-0;
+        @apply w-full h-full flex flex-col max-w-[1600px] mx-auto px-6 py-4 gap-4;
     }
 
     .toolbar-wrapper {
-        @apply sticky top-0 z-50 w-full mb-8;
-        background: inherit;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-        --toolbar-height: 100%;
+        @apply w-full shrink-0;
     }
 
-    .toolbox-wrapper {
-        @apply sticky h-fit shrink-0 self-start;
-        top: calc(var(--toolbar-height) + 2rem);
-        z-index: 40;
+    .main-layout {
+        @apply flex gap-6 items-start flex-grow overflow-hidden min-h-0;
+    }
+
+    .grid-section {
+        @apply flex-grow h-full overflow-auto rounded-lg border border-orange-200/30 bg-white/30 backdrop-blur-sm;
+        flex-basis: 66.666%;
+        max-width: 66.666%;
+    }
+
+    .grid-container {
+        @apply p-8 min-h-full w-fit min-w-full flex justify-center items-start;
+    }
+
+    .toolbox-section {
+        @apply shrink-0 h-full overflow-auto;
+        flex-basis: 33.333%;
+        max-width: 33.333%;
     }
 </style>

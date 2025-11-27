@@ -67,7 +67,7 @@
         </span>
     </h3>
 
-    <div class="space-y-4 max-h-[500px] overflow-y-auto pr-1">
+    <div class="space-y-4 pr-1">
         {#if data.definitions && data.definitions.length > 0}
             {#each data.definitions as def, index (def.id)}
                 <div
@@ -151,6 +151,33 @@
                             placeholder="DÉFINITION..."
                             class="w-full px-3 py-2 text-xs font-bold text-amber-900 bg-white border-2 border-amber-200 rounded-md hover:border-amber-300 focus:border-amber-500 focus:outline-none transition-colors uppercase placeholder-amber-300/50 shadow-sm"
                         />
+                    </div>
+
+                    <!-- 1.5 Font Size Slider -->
+                    <div
+                        class="flex items-center gap-2 bg-amber-50 p-2 rounded-lg border border-amber-100"
+                    >
+                        <span
+                            class="text-[10px] font-bold text-amber-700 uppercase w-12"
+                            >Taille</span
+                        >
+                        <input
+                            type="range"
+                            min="6"
+                            max="20"
+                            step="0.5"
+                            value={def.fontSize || 10}
+                            oninput={(e) =>
+                                updateDefinition(def.id, {
+                                    fontSize: parseFloat(e.currentTarget.value),
+                                })}
+                            class="flex-1 h-1.5 bg-amber-200 rounded-lg appearance-none cursor-pointer accent-amber-600"
+                        />
+                        <span
+                            class="text-xs font-mono text-amber-900 w-12 text-right"
+                        >
+                            {def.fontSize || 10}px
+                        </span>
                     </div>
 
                     <!-- 2. Button Group (Horizontal/Vertical) -->

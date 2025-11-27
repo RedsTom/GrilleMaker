@@ -105,26 +105,31 @@
     class:border-left-dashed={y === 0 && data.borders?.left === "dashed"}
     class:no-top-border={x > 0}
     class:no-left-border={y > 0}
-    onclick={() => store.mode !== "preview" && store.selectCell(x, y, true)}
+    onclick={(e) => {
+        e.stopPropagation();
+        if (store.mode !== "preview") store.selectCell(x, y, true);
+    }}
     role="textbox"
     tabindex={store.mode === "preview" ? -1 : 0}
     onkeydown={(e) => store.mode !== "preview" && handleKeyDown(e)}
 >
     {#if data.type === "definition"}
-        <div class="w-full h-full flex flex-col">
+        <div
+            class="w-full h-full flex flex-col rounded-[calc(0.25rem-2px)] relative"
+        >
             {#if data.definitions && data.definitions.length > 0}
                 {#each data.definitions as def, i}
-                    {@const fontSize = calculateFontSize(
-                        def.text,
-                        data.definitions.length,
-                    )}
+                    {@const fontSize =
+                        def.fontSize ||
+                        calculateFontSize(def.text, data.definitions.length)}
                     <div
                         class="definition-section flex-1 w-full flex items-center justify-center min-h-0 px-1 py-0.5"
-                        class:has-border={i < data.definitions.length - 1}
+                        class:bg-amber-800={i % 2 === 0}
+                        class:bg-amber-900={i % 2 !== 0}
                     >
                         <!-- Text with dynamic font size -->
                         <span
-                            class="definition-text font-bold wrap-break-words w-full text-center uppercase leading-tight"
+                            class="definition-text font-bold wrap-break-words w-full text-center uppercase leading-tight text-yellow-50"
                             style="font-size: {fontSize}px; line-height: {fontSize +
                                 2}px;"
                         >
@@ -141,7 +146,13 @@
                     />
                 {/each}
             {:else}
-                <span class="opacity-50 text-xs font-bold">DEF</span>
+                <div
+                    class="w-full h-full flex items-center justify-center bg-amber-800"
+                >
+                    <span class="opacity-50 text-xs font-bold text-yellow-50"
+                        >DEF</span
+                    >
+                </div>
             {/if}
         </div>
     {:else if store.mode !== "preview"}
@@ -172,24 +183,19 @@
     }
 
     .definition {
-        @apply bg-amber-800 text-yellow-50 border-amber-900 text-xs p-1 text-center leading-tight font-bold;
+        @apply p-0 border-amber-900;
         box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.2);
-        overflow: visible;
-        position: relative;
     }
 
     .definition-section {
         @apply transition-all;
     }
 
-    .definition-section.has-border {
-        border-bottom: 2px solid rgba(180, 83, 9, 0.4);
-    }
-
     .definition-text {
         @apply wrap-break-word hyphens-auto;
         word-break: break-word;
         overflow-wrap: break-word;
+        text-shadow: 0 1px 1px rgba(0, 0, 0, 0.3);
     }
 
     .selected {
@@ -200,8 +206,18 @@
     }
 
     .selected.definition {
-        @apply bg-orange-100 text-amber-900;
-        box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.5);
+        @apply bg-transparent;
+        box-shadow: none;
+    }
+
+    /* Ensure selection outline is visible on top of definition backgrounds */
+    .selected.definition::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        border: 2px solid theme("colors.amber.700");
+        border-radius: 0.25rem;
+        pointer-events: none;
     }
 
     .in-selection {
@@ -210,7 +226,17 @@
     }
 
     .in-selection.definition {
-        @apply bg-amber-700 text-yellow-50;
+        /* Definition cells keep their background, maybe add an overlay? */
+        position: relative;
+    }
+
+    .in-selection.definition::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background-color: rgba(255, 165, 0, 0.2);
+        pointer-events: none;
+        z-index: 5;
     }
 
     /* Bordures pointillées - remplacer complètement la bordure */
