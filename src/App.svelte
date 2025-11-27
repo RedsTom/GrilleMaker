@@ -2,6 +2,7 @@
     import Grid from "./lib/components/Grid.svelte";
     import Toolbar from "./lib/components/Toolbar.svelte";
     import Toolbox from "./lib/components/Toolbox.svelte";
+    import PreviewControls from "./lib/components/PreviewControls.svelte";
     import { store } from "./lib/store.svelte";
 
     let gridContainer: HTMLDivElement;
@@ -48,8 +49,17 @@
                 <div class="toolbox-section" bind:this={toolboxContainer}>
                     <Toolbox />
                 </div>
+            {:else if store.mode === "preview"}
+                <div class="toolbox-section" bind:this={toolboxContainer}>
+                    <PreviewControls />
+                </div>
             {/if}
         </div>
+    </div>
+    <div class="print-footer">
+        Cette grille a été créée sur <a href="https://grillemaker.redstom.fr/"
+            >https://grillemaker.redstom.fr/</a
+        >
     </div>
 </main>
 
@@ -100,5 +110,64 @@
         @apply shrink-0 h-full overflow-auto;
         flex-basis: 33.333%;
         max-width: 33.333%;
+    }
+
+    @media print {
+        @page {
+            margin: 0;
+        }
+
+        .app-container {
+            height: auto;
+            overflow: visible;
+            background: white;
+            print-color-adjust: exact;
+            -webkit-print-color-adjust: exact;
+        }
+
+        .content-wrapper {
+            padding: 20mm; /* Add padding to simulate margins */
+            max-width: none;
+            min-height: 100vh;
+            position: relative;
+        }
+
+        .toolbar-wrapper,
+        .toolbox-section {
+            display: none;
+        }
+
+        .main-layout {
+            display: block;
+            overflow: visible;
+        }
+
+        .grid-section {
+            flex-basis: 100%;
+            max-width: 100%;
+            border: none;
+            background: transparent;
+            overflow: visible;
+            backdrop-filter: none !important;
+        }
+
+        .grid-container {
+            padding: 0;
+            min-height: auto;
+            display: block;
+        }
+
+        .print-footer {
+            display: block;
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            text-align: center;
+            font-size: 10pt;
+            color: #666;
+            font-family: sans-serif;
+            padding-bottom: 10mm;
+        }
     }
 </style>

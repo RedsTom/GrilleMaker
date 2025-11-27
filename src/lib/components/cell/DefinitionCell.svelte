@@ -1,5 +1,6 @@
 <script lang="ts">
     import type { CellData } from "../../store.svelte";
+    import { store } from "../../store.svelte";
     import Arrow from "../Arrow.svelte";
 
     let { data } = $props<{
@@ -32,12 +33,18 @@
                 calculateFontSize(def.text, data.definitions.length)}
             <div
                 class="definition-section flex-1 w-full flex items-center justify-center min-h-0 px-1 py-0.5"
-                class:bg-amber-800={i % 2 === 0}
-                class:bg-amber-900={i % 2 !== 0}
+                class:bg-amber-800={store.isColor && i % 2 === 0}
+                class:bg-amber-900={store.isColor && i % 2 !== 0}
+                class:bg-gray-200={!store.isColor}
+                class:border-b={!store.isColor &&
+                    i < data.definitions.length - 1}
+                class:border-gray-400={!store.isColor}
             >
                 <!-- Text with dynamic font size -->
                 <span
-                    class="definition-text font-bold wrap-break-words w-full text-center uppercase leading-tight text-yellow-50"
+                    class="definition-text font-bold wrap-break-words w-full text-center uppercase leading-tight"
+                    class:text-yellow-50={store.isColor}
+                    class:text-black={!store.isColor}
                     style="font-size: {fontSize}px; line-height: {fontSize +
                         2}px;"
                 >
@@ -55,9 +62,15 @@
         {/each}
     {:else}
         <div
-            class="w-full h-full flex items-center justify-center bg-amber-800"
+            class="w-full h-full flex items-center justify-center"
+            class:bg-amber-800={store.isColor}
+            class:bg-gray-200={!store.isColor}
         >
-            <span class="opacity-50 text-xs font-bold text-yellow-50">DEF</span>
+            <span
+                class="opacity-50 text-xs font-bold"
+                class:text-yellow-50={store.isColor}
+                class:text-black={!store.isColor}>DEF</span
+            >
         </div>
     {/if}
 </div>
@@ -74,5 +87,11 @@
         word-break: break-word;
         overflow-wrap: break-word;
         text-shadow: 0 1px 1px rgba(0, 0, 0, 0.3);
+    }
+
+    @media print {
+        .definition-text {
+            text-shadow: none !important;
+        }
     }
 </style>

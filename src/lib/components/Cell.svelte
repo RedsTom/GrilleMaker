@@ -87,8 +87,8 @@
     class:border-right-dashed={data.borders?.right === "dashed"}
     class:border-bottom-dashed={data.borders?.bottom === "dashed"}
     class:border-left-dashed={y === 0 && data.borders?.left === "dashed"}
-    class:no-top-border={x > 0}
-    class:no-left-border={y > 0}
+    class:no-top-border={x > 0 && data.type !== "definition"}
+    class:no-left-border={y > 0 && data.type !== "definition"}
     onclick={(e) => {
         e.stopPropagation();
         if (store.mode !== "preview") store.selectCell(x, y, true);
@@ -99,7 +99,7 @@
 >
     {#if data.type === "definition"}
         <DefinitionCell {data} />
-    {:else if store.mode !== "preview"}
+    {:else if store.mode !== "preview" || store.showSolution}
         <StandardCell {data} />
     {/if}
 </div>
@@ -195,5 +195,17 @@
         border-left-width: 2px !important;
         border-left-style: dashed !important;
         border-left-color: rgba(180, 83, 9, 0.5) !important;
+    }
+
+    @media print {
+        .cell,
+        .standard,
+        .definition,
+        .selected,
+        .in-selection {
+            box-shadow: none !important;
+            text-shadow: none !important;
+            transition: none !important;
+        }
     }
 </style>

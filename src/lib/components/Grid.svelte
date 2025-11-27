@@ -5,6 +5,7 @@
 
 <div
   class="grid-wrapper"
+  class:grayscale={!store.isColor}
   onclick={() => store.deselectCell()}
   role="button"
   tabindex="-1"
@@ -41,8 +42,24 @@
     margin: 20px;
   }
 
+  .grid-wrapper.grayscale {
+    filter: grayscale(100%);
+    @apply bg-white border-gray-800;
+  }
+
   .grid-row {
     @apply flex gap-0;
     position: relative;
+  }
+  @media print {
+    .grid-wrapper {
+      transform: none !important;
+      box-shadow: none !important;
+      filter: none !important;
+      margin: 0 !important;
+      border: 2px solid #000 !important;
+      overflow: visible !important;
+      transition: none !important;
+    }
   }
 </style>

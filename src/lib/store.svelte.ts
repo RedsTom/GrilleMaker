@@ -46,6 +46,8 @@ export class CrosswordStore {
     mode = $state<'edit' | 'preview'>('edit');
     selectionDirection = $state<SelectionDirection>('row');
     lastClickedCell = $state<{ x: number; y: number } | null>(null);
+    showSolution = $state(false);
+    isColor = $state(true);
 
     constructor(rows = 10, cols = 10) {
         this.rows = rows;
@@ -295,6 +297,32 @@ export class CrosswordStore {
                 }
             });
         });
+    }
+
+    exportState(): string {
+        const data = {
+            rows: this.rows,
+            cols: this.cols,
+            grid: this.grid
+        };
+        return JSON.stringify(data, null, 2);
+    }
+
+    importState(json: string) {
+        try {
+            const data = JSON.parse(json);
+            if (data.rows && data.cols && data.grid) {
+                this.rows = data.rows;
+                this.cols = data.cols;
+                this.grid = data.grid;
+                this.migrateOldArrows();
+                this.save(); // Sauvegarder immédiatement après l'import
+            } else {
+                console.error('Invalid grid file format');
+            }
+        } catch (e) {
+            console.error('Failed to import state', e);
+        }
     }
 }
 
