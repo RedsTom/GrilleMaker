@@ -3,6 +3,7 @@
     import Toolbar from "./lib/components/Toolbar.svelte";
     import Toolbox from "./lib/components/Toolbox.svelte";
     import PreviewControls from "./lib/components/PreviewControls.svelte";
+    import Footer from "./lib/components/Footer.svelte";
     import { store } from "./lib/store.svelte";
 
     let gridContainer: HTMLDivElement;
@@ -55,6 +56,7 @@
                 </div>
             {/if}
         </div>
+        <Footer />
     </div>
     <div class="print-footer">
         Cette grille a été créée sur <a href="https://grillemaker.redstom.fr/"

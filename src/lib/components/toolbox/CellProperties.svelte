@@ -1,5 +1,6 @@
 <script lang="ts">
     import { store } from "../../store.svelte";
+    import { X } from "lucide-svelte";
     import type { CellData } from "../../store.svelte";
     import CellTypeControl from "../CellTypeControl.svelte";
     import BorderControl from "../BorderControl.svelte";
@@ -18,9 +19,10 @@
             Propriétés de la cellule
         </h2>
         <button
-            class="text-xs font-semibold text-amber-700 hover:text-amber-900 hover:bg-orange-200/50 px-2 py-1 rounded transition-colors"
+            class="text-xs font-semibold text-amber-700 hover:text-amber-900 hover:bg-orange-200/50 px-2 py-1 rounded transition-colors flex items-center gap-1"
             onclick={() => store.deselectCell()}
         >
+            <X size={12} />
             Désélectionner
         </button>
     </div>
